@@ -359,10 +359,17 @@ namespace StrmAssistant
         {
             var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
 
-            var videos = items.OfType<Video>().Cast<BaseItem>().ToList();
+            var itemsMultiVersions = items.SelectMany(v =>
+                    _libraryManager.GetItemList(new InternalItemsQuery
+                        {
+                            PresentationUniqueKey = v.PresentationUniqueKey
+                        }))
+                .ToList();
 
-            var seriesIds = items.OfType<Series>().Select(s => s.InternalId)
-                .Union(items.OfType<Episode>().Select(e => e.SeriesId)).ToArray();
+            var videos = itemsMultiVersions.OfType<Video>().Cast<BaseItem>().ToList();
+
+            var seriesIds = itemsMultiVersions.OfType<Series>().Select(s => s.InternalId)
+                .Union(itemsMultiVersions.OfType<Episode>().Select(e => e.SeriesId)).ToArray();
 
             var episodes = Array.Empty<BaseItem>();
             if (seriesIds.Length > 0)
